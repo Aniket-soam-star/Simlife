@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Simulator - Ultra Realistic Life Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-dark: #0f172a;
+            --bg-medium: #1e293b;
+            --bg-light: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --border: #475569;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+            animation: slideDown 0.5s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        h1 {
+            font-family: 'Space Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* Game Screens */
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in;
+        }
+        
+        .screen.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .start-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .character-creation {
+            background: var(--bg-medium);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+        
+        /* Game Screen */
+        .game-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        /* Character Panel */
+        .character-panel {
+            background: var(--bg-medium);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .character-info h3 {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .character-age {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-item {
+            margin-bottom: 15px;
+        }
+        
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .stat-bar {
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .stat-fill {
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        
+        .stat-fill.health { background: var(--success); }
+        .stat-fill.happiness { background: #fbbf24; }
+        .stat-fill.intelligence { background: #3b82f6; }
+        .stat-fill.looks { background: var(--secondary); }
+        
+        .money-display {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .money-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--success);
+            font-family: 'Space Mono', monospace;
+        }
+        
+        /* Main Game Area */
+        .main-game {
+            background: var(--bg-medium);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .life-stage {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 15px 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Events Log */
+        .events-log {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .events-log::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .events-log::-webkit-scrollbar-track {
+            background: var(--bg-medium);
+            border-radius: 10px;
+        }
+        
+        .events-log::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+        
+        .event-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: var(--bg-medium);
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+            animation: slideInRight 0.3s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .event-item.important {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+        
+        .event-item.critical {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        /* Activities Grid */
+        .activities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .activity-card {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .activity-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .activity-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .activity-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .activity-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-medium);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: scaleIn 0.3s ease;
+        }
+        
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .modal-text {
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .choice-btn {
+            padding: 15px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+        }
+        
+        .choice-btn:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+            transform: translateX(5px);
+        }
+        
+        /* Relationships */
+        .relationships {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .relationship-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-medium);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .relationship-info {
+            flex: 1;
+        }
+        
+        .relationship-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .relationship-type {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        
+        .relationship-level {
+            font-size: 0.9rem;
+            padding: 5px 15px;
+            background: var(--bg-dark);
+            border-radius: 20px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 968px) {
+            .game-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .character-panel {
+                position: relative;
+                top: 0;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .activities-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+        
+        /* Death Screen */
+        .death-screen {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .death-screen h2 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            font-family: 'Space Mono', monospace;
+        }
+        
+        .death-stats {
+            background: var(--bg-medium);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 30px auto;
+        }
+        
+        .stat-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-item {
+            background: var(--bg-dark);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚡ LIFE SIMULATOR ⚡</h1>
+            <p class="subtitle">Experience the most realistic life simulation ever created</p>
+        </header>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="screen active">
+            <div class="start-screen">
+                <h2>Begin Your Life</h2>
+                <div class="character-creation">
+                    <div class="form-group">
+                        <label>Your Name</label>
+                        <input type="text" id="characterName" placeholder="Enter your name">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="characterGender">
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Country of Birth</label>
+                        <select id="characterCountry">
+                            <option value="usa">United States</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="canada">Canada</option>
+                            <option value="australia">Australia</option>
+                            <option value="germany">Germany</option>
+                            <option value="france">France</option>
+                            <option value="japan">Japan</option>
+                            <option value="india">India</option>
+                            <option value="brazil">Brazil</option>
+                            <option value="mexico">Mexico</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="startGame()">Start Life</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-layout">
+                <!-- Character Panel -->
+                <div class="character-panel">
+                    <div class="character-info">
+                        <h3 id="charName">-</h3>
+                        <div class="character-age">
+                            <span id="charAge">0</span> years old
+                        </div>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <span>❤️ Health</span>
+                                <span id="healthValue">100</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-fill health" id="healthBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <span>😊 Happiness</span>
+                                <span id="happinessValue">100</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-fill happiness" id="happinessBar" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <span>🧠 Intelligence</span>
+                                <span id="intelligenceValue">50</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-fill intelligence" id="intelligenceBar" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="stat-item">
+                            <div class="stat-label">
+                                <span>✨ Looks</span>
+                                <span id="looksValue">50</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-fill looks" id="looksBar" style="width: 50%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="money-display">
+                        <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 5px;">Net Worth</div>
+                        <div class="money-amount" id="moneyAmount">$0</div>
+                    </div>
+                    
+                    <div id="relationshipsPanel" class="relationships" style="margin-top: 20px; display: none;">
+                        <h4 style="margin-bottom: 15px;">Relationships</h4>
+                        <div id="relationshipsList"></div>
+                    </div>
+                </div>
+
+                <!-- Main Game Area -->
+                <div class="main-game">
+                    <div class="life-stage" id="lifeStage">👶 Infant</div>
+                    
+                    <div class="events-log" id="eventsLog">
+                        <div class="event-item">Welcome to your new life! Your journey begins now...</div>
+                    </div>
+                    
+                    <div id="activitiesSection">
+                        <h3 style="margin-bottom: 20px;">Activities</h3>
+                        <div class="activities-grid" id="activitiesGrid"></div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="ageUp()">📅 Age Up (1 Year)</button>
+                        <button class="btn btn-secondary" onclick="showRelationships()">👥 Relationships</button>
+                        <button class="btn btn-secondary" onclick="showCareer()">💼 Career</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Death Screen -->
+        <div id="deathScreen" class="screen">
+            <div class="death-screen">
+                <h2>💀 Life Complete 💀</h2>
+                <div class="death-stats">
+                    <h3 id="deathMessage" style="margin-bottom: 30px; font-size: 1.3rem;"></h3>
+                    <div class="stat-summary">
+                        <div class="summary-item">
+                            <div class="summary-label">Lived To</div>
+                            <div class="summary-value" id="finalAge">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Net Worth</div>
+                            <div class="summary-value" id="finalMoney">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Career</div>
+                            <div class="summary-value" id="finalCareer">-</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-label">Happiness</div>
+                            <div class="summary-value" id="finalHappiness">-</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="location.reload()">Start New Life</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Events -->
+    <div id="eventModal" class="modal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Event</h3>
+            <p class="modal-text" id="modalText"></p>
+            <div class="modal-choices" id="modalChoices"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            name: '',
+            gender: '',
+            country: '',
+            age: 0,
+            health: 100,
+            happiness: 100,
+            intelligence: 50,
+            looks: 50,
+            money: 0,
+            education: '',
+            career: '',
+            careerLevel: 0,
+            salary: 0,
+            relationships: [],
+            events: [],
+            achievements: [],
+            isDead: false
+        };
+
+        // Life Stages
+        const lifeStages = {
+            0: { name: '👶 Infant', activities: ['cry', 'sleep', 'play'] },
+            2: { name: '👧 Toddler', activities: ['play', 'learn', 'sleep'] },
+            5: { name: '🧒 Child', activities: ['study', 'play', 'sports', 'music'] },
+            13: { name: '🧑 Teenager', activities: ['study', 'socialize', 'sports', 'music', 'partTime'] },
+            18: { name: '🎓 Young Adult', activities: ['study', 'work', 'socialize', 'gym', 'date'] },
+            25: { name: '👔 Adult', activities: ['work', 'socialize', 'gym', 'date', 'invest'] },
+            40: { name: '🧓 Middle Aged', activities: ['work', 'family', 'invest', 'health'] },
+            65: { name: '👴 Senior', activities: ['retire', 'family', 'health', 'hobbies'] }
+        };
+
+        // Activities Database
+        const activities = {
+            cry: { 
+                name: '😭 Cry', 
+                icon: '😭', 
+                desc: 'Express your needs',
+                effects: { happiness: -5 }
+            },
+            sleep: { 
+                name: '😴 Sleep', 
+                icon: '😴', 
+                desc: 'Rest and recover',
+                effects: { health: 5, happiness: 5 }
+            },
+            play: { 
+                name: '🎮 Play', 
+                icon: '🎮', 
+                desc: 'Have fun!',
+                effects: { happiness: 10 }
+            },
+            learn: { 
+                name: '📚 Learn', 
+                icon: '📚', 
+                desc: 'Develop skills',
+                effects: { intelligence: 5 }
+            },
+            study: { 
+                name: '📖 Study', 
+                icon: '📖', 
+                desc: 'Study hard',
+                effects: { intelligence: 10, happiness: -5 }
+            },
+            socialize: { 
+                name: '🎉 Socialize', 
+                icon: '🎉', 
+                desc: 'Make friends',
+                effects: { happiness: 15 }
+            },
+            sports: { 
+                name: '⚽ Sports', 
+                icon: '⚽', 
+                desc: 'Stay active',
+                effects: { health: 10, looks: 5, happiness: 5 }
+            },
+            music: { 
+                name: '🎵 Music', 
+                icon: '🎵', 
+                desc: 'Practice music',
+                effects: { happiness: 10, intelligence: 5 }
+            },
+            partTime: { 
+                name: '💰 Part-Time Job', 
+                icon: '💰', 
+                desc: 'Earn pocket money',
+                effects: { money: 500, happiness: -5 }
+            },
+            work: { 
+                name: '💼 Work', 
+                icon: '💼', 
+                desc: 'Work hard',
+                effects: { money: 'salary', happiness: -10 }
+            },
+            gym: { 
+                name: '💪 Gym', 
+                icon: '💪', 
+                desc: 'Get fit',
+                effects: { health: 15, looks: 10, happiness: 5 }
+            },
+            date: { 
+                name: '❤️ Date', 
+                icon: '❤️', 
+                desc: 'Find love',
+                effects: { happiness: 20 }
+            },
+            invest: { 
+                name: '📈 Invest', 
+                icon: '📈', 
+                desc: 'Grow wealth',
+                effects: { money: 'investment' }
+            },
+            family: { 
+                name: '👨‍👩‍👧 Family Time', 
+                icon: '👨‍👩‍👧', 
+                desc: 'Spend time with loved ones',
+                effects: { happiness: 20 }
+            },
+            health: { 
+                name: '🏥 Health Checkup', 
+                icon: '🏥', 
+                desc: 'Visit doctor',
+                effects: { health: 20, money: -200 }
+            },
+            retire: { 
+                name: '🏖️ Retirement', 
+                icon: '🏖️', 
+                desc: 'Enjoy retirement',
+                effects: { happiness: 15 }
+            },
+            hobbies: { 
+                name: '🎨 Hobbies', 
+                icon: '🎨', 
+                desc: 'Pursue passions',
+                effects: { happiness: 15 }
+            }
+        };
+
+        // Random Events
+        const randomEvents = {
+            child: [
+                { text: 'You made a new friend at school!', effects: { happiness: 10 } },
+                { text: 'You got sick and missed school.', effects: { health: -10, happiness: -5 } },
+                { text: 'You won a school competition!', effects: { happiness: 15, intelligence: 5 } },
+                { text: 'You fell and scraped your knee.', effects: { health: -5 } }
+            ],
+            teen: [
+                { text: 'You got invited to a party!', effects: { happiness: 15 } },
+                { text: 'You aced your exam!', effects: { intelligence: 10, happiness: 10 } },
+                { text: 'You had a fight with a friend.', effects: { happiness: -15 } },
+                { text: 'You got your first phone!', effects: { happiness: 20 } },
+                { text: 'You broke up with your crush.', effects: { happiness: -20 } }
+            ],
+            adult: [
+                { text: 'You got a promotion!', effects: { money: 5000, happiness: 20 }, type: 'promotion' },
+                { text: 'You got fired from your job.', effects: { money: -2000, happiness: -30 }, type: 'fired' },
+                { text: 'You won the lottery!', effects: { money: 50000, happiness: 50 }, type: 'lottery' },
+                { text: 'Your car broke down.', effects: { money: -3000, happiness: -10 } },
+                { text: 'You received a tax refund!', effects: { money: 2000, happiness: 10 } },
+                { text: 'You got scammed online.', effects: { money: -5000, happiness: -20 } },
+                { text: 'You found money on the street!', effects: { money: 500, happiness: 5 } }
+            ],
+            senior: [
+                { text: 'Your grandchild was born!', effects: { happiness: 30 } },
+                { text: 'You developed arthritis.', effects: { health: -15 } },
+                { text: 'You won at bingo!', effects: { money: 1000, happiness: 10 } },
+                { text: 'You wrote your memoirs.', effects: { happiness: 20 } }
+            ]
+        };
+
+        // Careers
+        const careers = [
+            { name: 'Software Engineer', salary: 80000, requirement: 80 },
+            { name: 'Doctor', salary: 120000, requirement: 90 },
+            { name: 'Teacher', salary: 45000, requirement: 70 },
+            { name: 'Lawyer', salary: 100000, requirement: 85 },
+            { name: 'Artist', salary: 35000, requirement: 60 },
+            { name: 'Business Manager', salary: 75000, requirement: 75 },
+            { name: 'Nurse', salary: 55000, requirement: 70 },
+            { name: 'Police Officer', salary: 50000, requirement: 65 },
+            { name: 'Chef', salary: 40000, requirement: 60 },
+            { name: 'Accountant', salary: 60000, requirement: 75 }
+        ];
+
+        function startGame() {
+            const name = document.getElementById('characterName').value || 'You';
+            const gender = document.getElementById('characterGender').value;
+            const country = document.getElementById('characterCountry').value;
+
+            gameState = {
+                ...gameState,
+                name,
+                gender,
+                country,
+                age: 0,
+                health: 100,
+                happiness: 100,
+                intelligence: Math.floor(Math.random() * 30) + 40, // Random 40-70
+                looks: Math.floor(Math.random() * 30) + 40, // Random 40-70
+                relationships: [
+                    { name: 'Mother', type: 'Parent', level: 100 },
+                    { name: 'Father', type: 'Parent', level: 100 }
+                ]
+            };
+
+            document.getElementById('charName').textContent = gameState.name;
+            switchScreen('gameScreen');
+            updateUI();
+            renderActivities();
+            addEvent('You were born! Welcome to the world.');
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function updateUI() {
+            // Update stats
+            document.getElementById('charAge').textContent = gameState.age;
+            document.getElementById('healthValue').textContent = Math.max(0, Math.min(100, gameState.health));
+            document.getElementById('happinessValue').textContent = Math.max(0, Math.min(100, gameState.happiness));
+            document.getElementById('intelligenceValue').textContent = Math.max(0, Math.min(100, gameState.intelligence));
+            document.getElementById('looksValue').textContent = Math.max(0, Math.min(100, gameState.looks));
+            
+            // Update stat bars
+            document.getElementById('healthBar').style.width = Math.max(0, Math.min(100, gameState.health)) + '%';
+            document.getElementById('happinessBar').style.width = Math.max(0, Math.min(100, gameState.happiness)) + '%';
+            document.getElementById('intelligenceBar').style.width = Math.max(0, Math.min(100, gameState.intelligence)) + '%';
+            document.getElementById('looksBar').style.width = Math.max(0, Math.min(100, gameState.looks)) + '%';
+            
+            // Update money
+            document.getElementById('moneyAmount').textContent = '$' + gameState.money.toLocaleString();
+            
+            // Update life stage
+            let currentStage = '👶 Infant';
+            for (let age in lifeStages) {
+                if (gameState.age >= parseInt(age)) {
+                    currentStage = lifeStages[age].name;
+                }
+            }
+            document.getElementById('lifeStage').textContent = currentStage;
+            
+            // Show/hide relationships panel
+            if (gameState.relationships.length > 0) {
+                document.getElementById('relationshipsPanel').style.display = 'block';
+                renderRelationships();
+            }
+        }
+
+        function renderActivities() {
+            const grid = document.getElementById('activitiesGrid');
+            grid.innerHTML = '';
+            
+            let currentActivities = [];
+            for (let age in lifeStages) {
+                if (gameState.age >= parseInt(age)) {
+                    currentActivities = lifeStages[age].activities;
+                }
+            }
+            
+            currentActivities.forEach(actId => {
+                const act = activities[actId];
+                const card = document.createElement('div');
+                card.className = 'activity-card';
+                card.onclick = () => performActivity(actId);
+                card.innerHTML = `
+                    <div class="activity-icon">${act.icon}</div>
+                    <div class="activity-name">${act.name}</div>
+                    <div class="activity-desc">${act.desc}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function performActivity(actId) {
+            const act = activities[actId];
+            
+            // Apply effects
+            for (let stat in act.effects) {
+                if (stat === 'money') {
+                    if (act.effects[stat] === 'salary') {
+                        gameState.money += gameState.salary || 0;
+                        addEvent(`You earned $${(gameState.salary || 0).toLocaleString()} from work.`);
+                    } else if (act.effects[stat] === 'investment') {
+                        const gain = Math.floor(gameState.money * (Math.random() * 0.1 - 0.05));
+                        gameState.money += gain;
+                        if (gain > 0) {
+                            addEvent(`Your investments gained $${gain.toLocaleString()}!`, 'important');
+                        } else {
+                            addEvent(`Your investments lost $${Math.abs(gain).toLocaleString()}.`, 'critical');
+                        }
+                    } else {
+                        gameState.money += act.effects[stat];
+                    }
+                } else {
+                    gameState[stat] = Math.max(0, Math.min(100, gameState[stat] + act.effects[stat]));
+                }
+            }
+            
+            addEvent(`You did: ${act.name}`);
+            updateUI();
+        }
+
+        function ageUp() {
+            gameState.age++;
+            
+            // Natural stat changes
+            if (gameState.age > 30) {
+                gameState.health -= Math.random() * 2;
+            }
+            
+            if (gameState.age > 50) {
+                gameState.health -= Math.random() * 3;
+                gameState.looks -= Math.random() * 2;
+            }
+            
+            // Random events
+            triggerRandomEvent();
+            
+            // Career progression
+            if (gameState.career && Math.random() > 0.7) {
+                gameState.careerLevel++;
+                gameState.salary *= 1.1;
+                addEvent(`You advanced in your career! New salary: $${Math.floor(gameState.salary).toLocaleString()}`, 'important');
+            }
+            
+            // Education milestones
+            if (gameState.age === 18 && !gameState.education) {
+                showEducationChoice();
+            }
+            
+            // Check for death
+            if (gameState.health <= 0 || gameState.age >= 100) {
+                die();
+                return;
+            }
+            
+            renderActivities();
+            updateUI();
+            addEvent(`You turned ${gameState.age} years old!`, 'important');
+        }
+
+        function triggerRandomEvent() {
+            let eventPool = [];
+            
+            if (gameState.age >= 5 && gameState.age < 13) {
+                eventPool = randomEvents.child;
+            } else if (gameState.age >= 13 && gameState.age < 18) {
+                eventPool = randomEvents.teen;
+            } else if (gameState.age >= 18 && gameState.age < 65) {
+                eventPool = randomEvents.adult;
+            } else if (gameState.age >= 65) {
+                eventPool = randomEvents.senior;
+            }
+            
+            if (eventPool.length > 0 && Math.random() > 0.5) {
+                const event = eventPool[Math.floor(Math.random() * eventPool.length)];
+                
+                // Apply effects
+                for (let stat in event.effects) {
+                    if (stat === 'money') {
+                        gameState.money = Math.max(0, gameState.money + event.effects[stat]);
+                    } else {
+                        gameState[stat] = Math.max(0, Math.min(100, gameState[stat] + event.effects[stat]));
+                    }
+                }
+                
+                const severity = event.effects.happiness < -10 || event.effects.health < -10 ? 'critical' : 
+                                event.effects.happiness > 15 || event.effects.money > 1000 ? 'important' : '';
+                addEvent(event.text, severity);
+                
+                if (event.type === 'fired' && gameState.career) {
+                    gameState.career = '';
+                    gameState.salary = 0;
+                }
+            }
+        }
+
+        function showEducationChoice() {
+            showModal(
+                'Education Decision',
+                'You graduated high school! What do you want to do?',
+                [
+                    {
+                        text: '🎓 Go to University',
+                        action: () => {
+                            gameState.education = 'University';
+                            gameState.intelligence += 20;
+                            gameState.money -= 50000;
+                            addEvent('You enrolled in university!', 'important');
+                            updateUI();
+                            closeModal();
+                        }
+                    },
+                    {
+                        text: '💼 Start Working',
+                        action: () => {
+                            gameState.education = 'High School';
+                            addEvent('You decided to start working!');
+                            findJob();
+                            closeModal();
+                        }
+                    },
+                    {
+                        text: '🎨 Trade School',
+                        action: () => {
+                            gameState.education = 'Trade School';
+                            gameState.intelligence += 10;
+                            gameState.money -= 20000;
+                            addEvent('You enrolled in trade school!');
+                            updateUI();
+                            closeModal();
+                        }
+                    }
+                ]
+            );
+        }
+
+        function showCareer() {
+            if (gameState.age < 18) {
+                addEvent("You're too young to have a career!");
+                return;
+            }
+            
+            if (gameState.career) {
+                showModal(
+                    'Your Career',
+                    `You are working as a ${gameState.career}. Salary: $${gameState.salary.toLocaleString()}/year`,
+                    [
+                        {
+                            text: '🔄 Change Career',
+                            action: () => {
+                                findJob();
+                                closeModal();
+                            }
+                        },
+                        {
+                            text: '❌ Quit Job',
+                            action: () => {
+                                gameState.career = '';
+                                gameState.salary = 0;
+                                addEvent('You quit your job!', 'critical');
+                                updateUI();
+                                closeModal();
+                            }
+                        },
+                        {
+                            text: '✓ Keep Job',
+                            action: closeModal
+                        }
+                    ]
+                );
+            } else {
+                findJob();
+            }
+        }
+
+        function findJob() {
+            const availableJobs = careers.filter(c => gameState.intelligence >= c.requirement);
+            
+            if (availableJobs.length === 0) {
+                addEvent("You don't qualify for any careers yet. Study more!", 'critical');
+                return;
+            }
+            
+            const job = availableJobs[Math.floor(Math.random() * availableJobs.length)];
+            gameState.career = job.name;
+            gameState.salary = job.salary;
+            gameState.careerLevel = 1;
+            
+            addEvent(`You got hired as a ${job.name}! Salary: $${job.salary.toLocaleString()}/year`, 'important');
+            updateUI();
+        }
+
+        function showRelationships() {
+            const list = document.getElementById('relationshipsList');
+            list.innerHTML = '';
+            
+            if (gameState.relationships.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No relationships yet</p>';
+            } else {
+                gameState.relationships.forEach(rel => {
+                    const item = document.createElement('div');
+                    item.className = 'relationship-item';
+                    item.innerHTML = `
+                        <div class="relationship-info">
+                            <div class="relationship-name">${rel.name}</div>
+                            <div class="relationship-type">${rel.type}</div>
+                        </div>
+                        <div class="relationship-level">${rel.level}%</div>
+                    `;
+                    list.appendChild(item);
+                });
+            }
+        }
+
+        function renderRelationships() {
+            showRelationships();
+        }
+
+        function addEvent(text, type = '') {
+            const log = document.getElementById('eventsLog');
+            const event = document.createElement('div');
+            event.className = 'event-item ' + type;
+            event.textContent = text;
+            log.insertBefore(event, log.firstChild);
+            
+            // Keep only last 20 events
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function showModal(title, text, choices) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            
+            const choicesDiv = document.getElementById('modalChoices');
+            choicesDiv.innerHTML = '';
+            
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = choice.text;
+                btn.onclick = choice.action;
+                choicesDiv.appendChild(btn);
+            });
+            
+            document.getElementById('eventModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('eventModal').classList.remove('active');
+        }
+
+        function die() {
+            gameState.isDead = true;
+            
+            const causes = [
+                'You passed away peacefully in your sleep.',
+                'You died from natural causes.',
+                'Your health declined and you passed away.',
+                'You lived a full life and passed away surrounded by loved ones.'
+            ];
+            
+            if (gameState.health <= 0) {
+                causes.push('Your health issues became too severe.');
+            }
+            
+            const cause = causes[Math.floor(Math.random() * causes.length)];
+            
+            document.getElementById('deathMessage').textContent = cause;
+            document.getElementById('finalAge').textContent = gameState.age + ' years';
+            document.getElementById('finalMoney').textContent = '$' + gameState.money.toLocaleString();
+            document.getElementById('finalCareer').textContent = gameState.career || 'Unemployed';
+            document.getElementById('finalHappiness').textContent = Math.floor(gameState.happiness) + '%';
+            
+            switchScreen('deathScreen');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default name
+            const randomNames = ['Alex', 'Jordan', 'Sam', 'Taylor', 'Morgan', 'Casey', 'Riley', 'Avery'];
+            document.getElementById('characterName').value = randomNames[Math.floor(Math.random() * randomNames.length)];
+        });
+    </script>
+</body>
+</html>
