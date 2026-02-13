@@ -1,2 +1,0 @@
-# Simlife
-A game
